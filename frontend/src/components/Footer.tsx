@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { WHATSAPP_NUMBER, whatsappLink } from "@/lib/whatsapp";
+import { whatsappLink } from "@/lib/whatsapp";
 
 export default function Footer() {
   const directLink = whatsappLink("Hi Aura Manufacturers, I'd like to know more.");

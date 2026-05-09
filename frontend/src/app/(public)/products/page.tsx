@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { fetchProducts } from "@/lib/api";
 import Reveal from "@/components/Reveal";
-import { SITE_NAME, SITE_URL, breadcrumbsJsonLd } from "@/lib/seo";
+import { SITE_URL, breadcrumbsJsonLd } from "@/lib/seo";
 
 import type { Metadata } from "next";
 export const metadata: Metadata = {

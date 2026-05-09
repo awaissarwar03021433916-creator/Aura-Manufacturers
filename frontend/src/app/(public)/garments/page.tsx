@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import { whatsappLink } from "@/lib/whatsapp";
-import { SITE_NAME, SITE_URL, breadcrumbsJsonLd } from "@/lib/seo";
+import { SITE_URL, breadcrumbsJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title:
@@ -342,7 +342,7 @@ export default function GarmentsPage() {
             </h2>
             <p className="text-[var(--muted)] leading-relaxed mb-6">
               Honest specs published up front, not pulled from a sales deck. If a
-              constraint will affect your order timeline or unit cost, you'll know
+              constraint will affect your order timeline or unit cost, you&rsquo;ll know
               before any deposit moves.
             </p>
             <Link href="/about" className="link-gold text-sm uppercase tracking-luxe">
@@ -445,7 +445,7 @@ export default function GarmentsPage() {
                   <span className="italic text-[var(--gold)]">or a sample?</span>
                 </h2>
                 <p className="mt-6 text-[var(--cream)]/70 max-w-md">
-                  Send what you have — we'll quote material, unit cost, and lead time
+                  Send what you have — we&rsquo;ll quote material, unit cost, and lead time
                   inside 48 hours. No middlemen.
                 </p>
               </div>
