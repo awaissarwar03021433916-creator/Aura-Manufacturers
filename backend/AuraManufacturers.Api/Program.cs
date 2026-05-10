@@ -99,15 +99,56 @@ builder.Services.AddSingleton<StorageService>();
 builder.Services.AddScoped<ProductService>();
 
 
-// 🌐 CORS
-builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
-    p.WithOrigins(
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-            builder.Configuration["Frontend:Url"] ?? "http://localhost:3000"
-        )
+// 🌐 CORS — local dev + Vercel production + Vercel preview deployments + custom domains.
+//   - Exact origins from a hard-coded baseline + comma-separated env override (Frontend:Url).
+//   - Vercel preview deployments (aura-manufacturers-git-*.vercel.app) are accepted via predicate.
+//   - GET / POST / PUT / DELETE / PATCH / OPTIONS all permitted.
+//   - Any header allowed (Authorization, Content-Type, multipart for image uploads, etc.).
+{
+    var allowedOrigins = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://aura-manufacturers.vercel.app",
+    };
+
+    // Optional comma-separated extra origins from env (e.g. custom production domain)
+    var fromEnv = builder.Configuration["Frontend:Url"];
+    if (!string.IsNullOrWhiteSpace(fromEnv))
+    {
+        foreach (var raw in fromEnv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            allowedOrigins.Add(raw.TrimEnd('/'));
+        }
+    }
+
+    Console.WriteLine("👉 CORS allowed origins:");
+    foreach (var o in allowedOrigins) Console.WriteLine($"   · {o}");
+    Console.WriteLine("   · (regex) https://aura-manufacturers*.vercel.app  — preview deployments");
+
+    builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
+        p.SetIsOriginAllowed(origin =>
+        {
+            if (string.IsNullOrEmpty(origin)) return false;
+            if (allowedOrigins.Contains(origin)) return true;
+            try
+            {
+                var host = new Uri(origin).Host;
+                // Allow Vercel preview deployments scoped to this project only
+                return host.EndsWith(".vercel.app", StringComparison.OrdinalIgnoreCase)
+                    && host.StartsWith("aura-manufacturers", StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+        })
+        .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         .AllowAnyHeader()
-        .AllowAnyMethod()));
+        .WithExposedHeaders("Content-Disposition", "Content-Length")
+        .SetPreflightMaxAge(TimeSpan.FromHours(1))
+    ));
+}
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
