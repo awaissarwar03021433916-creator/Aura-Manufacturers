@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { SITE_DESCRIPTION, SITE_KEYWORDS, SITE_NAME, SITE_URL } from "@/lib/seo";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -122,6 +123,7 @@ export default function RootLayout({
         className={`${inter.variable} font-sans antialiased bg-[var(--bg)] text-[var(--text)]`}
       >
         {children}
+        <GoogleAnalytics />
       </body>
     </html>
   );
