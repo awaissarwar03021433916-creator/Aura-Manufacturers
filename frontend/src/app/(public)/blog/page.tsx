@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import { getAllPosts } from "@/lib/blog";
-import { SITE_URL } from "@/lib/seo";
+import {
+  SITE_URL,
+  SITE_NAME,
+  ORG_ID,
+  LOGO_ID,
+  breadcrumbsJsonLd,
+  webPageJsonLd,
+} from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Blog — Ladies Bag Manufacturers in Lahore & Pakistan",
@@ -20,9 +27,49 @@ export const metadata: Metadata = {
 
 export default function BlogIndexPage() {
   const posts = getAllPosts();
+  const crumbs = breadcrumbsJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Blog", path: "/blog" },
+  ]);
+  const collectionPage = webPageJsonLd({
+    type: "CollectionPage",
+    url: `${SITE_URL}/blog`,
+    name: "Aura Manufacturers Blog — Ladies Bags, Lahore & Pakistan",
+    description:
+      "Buyer guides, wholesale notes, and craftsmanship essays from Aura Manufacturers, a Lahore-based ladies bag manufacturer.",
+    breadcrumb: crumbs,
+  });
+  const blogJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "@id": `${SITE_URL}/blog#blog`,
+    name: `${SITE_NAME} Blog`,
+    description:
+      "Original buyer guides and craftsmanship notes from a working ladies bag manufacturer in Lahore, Pakistan.",
+    url: `${SITE_URL}/blog`,
+    inLanguage: "en-PK",
+    publisher: { "@id": ORG_ID },
+    image: { "@id": LOGO_ID },
+    blogPost: posts.map((p) => ({
+      "@type": "BlogPosting",
+      "@id": `${SITE_URL}/blog/${p.slug}#article`,
+      headline: p.title,
+      description: p.description,
+      url: `${SITE_URL}/blog/${p.slug}`,
+      datePublished: p.publishedAt,
+      dateModified: p.publishedAt,
+      image: p.hero.src,
+      author: { "@type": "Organization", name: p.author, url: SITE_URL },
+      publisher: { "@id": ORG_ID },
+      keywords: p.tags.join(", "),
+    })),
+  };
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPage) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(blogJsonLd) }} />
       <section className="section-cream relative overflow-hidden">
         <div className="blob blob-gold blob-drift-slow w-[26rem] h-[26rem] -right-24 -top-20 opacity-40" />
         <div className="blob blob-camel w-[18rem] h-[18rem] -left-16 top-32 opacity-25" />

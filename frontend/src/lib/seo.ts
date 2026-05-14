@@ -1,11 +1,22 @@
+// Centralised SEO + JSON-LD definitions.
+// Read by app/(public)/layout.tsx (site-wide graph) and by individual
+// public pages (page-specific schemas). Designed to validate cleanly
+// against Google's Rich Results test, Bing's Webmaster Tools, and to
+// give AI engines (ChatGPT, Gemini, Perplexity) a single canonical
+// "who we are / what we sell / how to reach us" graph.
+
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
   "https://aura-manufacturers.com";
 
 export const SITE_NAME = "Aura Manufacturers";
+export const SITE_LEGAL_NAME = "Aura Manufacturers";
 
 export const SITE_DESCRIPTION =
   "Aura Manufacturers is a Lahore-based ladies bag manufacturer crafting handbags, clutches, totes, and custom designs for women across Pakistan. Made-to-order workshop, wholesale enquiries welcome.";
+
+export const SITE_TAGLINE =
+  "Ladies bag manufacturer, handbag factory and OEM bag supplier in Lahore, Pakistan.";
 
 export const SITE_KEYWORDS = [
   "ladies bag manufacturers",
@@ -20,26 +31,242 @@ export const SITE_KEYWORDS = [
   "hand bags images",
   "hand bags manufacturers in Lahore",
   "designer handbags manufacturer",
+  "handbag factory Pakistan",
+  "OEM bag supplier Pakistan",
 ];
 
-export const WEBSITE_JSON_LD = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "@id": `${SITE_URL}/#website`,
-  url: SITE_URL,
-  name: SITE_NAME,
-  inLanguage: "en-PK",
-  publisher: { "@id": `${SITE_URL}/#organization` },
-  potentialAction: {
-    "@type": "SearchAction",
-    target: {
-      "@type": "EntryPoint",
-      urlTemplate: `${SITE_URL}/products?q={search_term_string}`,
-    },
-    "query-input": "required name=search_term_string",
-  },
-};
+// Contact ----------------------------------------------------------------
+export const PHONE_E164 = "+923258828885";
+export const PHONE_DISPLAY = "+92 325 8828885";
+export const WHATSAPP_URL = "https://wa.me/923258828885";
 
+// Address ----------------------------------------------------------------
+export const ADDRESS = {
+  streetAddress: "Mehar Fayyaz Colony, Salamat pura Road, Fateh Garh",
+  addressLocality: "Lahore",
+  addressRegion: "Punjab",
+  postalCode: "54840",
+  addressCountry: "PK",
+} as const;
+
+// Workshop coordinates — sourced from the Google Maps embed on /location.
+export const GEO = { latitude: 31.554653, longitude: 74.420306 } as const;
+
+// Hours used by both UI and openingHoursSpecification.
+export const HOURS_SPEC: Array<{
+  dayOfWeek: string;
+  opens?: string;
+  closes?: string;
+  closed?: boolean;
+}> = [
+  { dayOfWeek: "Monday",    opens: "10:00", closes: "20:00" },
+  { dayOfWeek: "Tuesday",   opens: "10:00", closes: "20:00" },
+  { dayOfWeek: "Wednesday", opens: "10:00", closes: "20:00" },
+  { dayOfWeek: "Thursday",  opens: "10:00", closes: "20:00" },
+  { dayOfWeek: "Friday",    opens: "14:30", closes: "20:00" },
+  { dayOfWeek: "Saturday",  opens: "10:00", closes: "20:00" },
+  { dayOfWeek: "Sunday",    closed: true },
+];
+
+export const FOUNDING_DATE = "2015";
+
+// Optional social handles. Define the env vars to publish them in
+// `sameAs` — undefined values are filtered out so we never emit
+// broken/placeholder URLs in production.
+const SOCIAL_LINKS = [
+  WHATSAPP_URL,
+  process.env.NEXT_PUBLIC_FACEBOOK_URL,
+  process.env.NEXT_PUBLIC_INSTAGRAM_URL,
+  process.env.NEXT_PUBLIC_TIKTOK_URL,
+  process.env.NEXT_PUBLIC_YOUTUBE_URL,
+  process.env.NEXT_PUBLIC_LINKEDIN_URL,
+].filter((v): v is string => typeof v === "string" && v.length > 0);
+
+// Stable @id anchors so nodes can reference each other across pages.
+export const ORG_ID            = `${SITE_URL}/#organization`;
+export const LOCALBUSINESS_ID  = `${SITE_URL}/#localbusiness`;
+export const WEBSITE_ID        = `${SITE_URL}/#website`;
+export const LOGO_ID           = `${SITE_URL}/#logo`;
+
+const LOGO_URL =
+  process.env.NEXT_PUBLIC_LOGO_URL ?? `${SITE_URL}/icon.svg`;
+
+const postalAddress = () => ({
+  "@type": "PostalAddress",
+  streetAddress: ADDRESS.streetAddress,
+  addressLocality: ADDRESS.addressLocality,
+  addressRegion: ADDRESS.addressRegion,
+  postalCode: ADDRESS.postalCode,
+  addressCountry: ADDRESS.addressCountry,
+});
+
+const openingHoursSpecification = () =>
+  HOURS_SPEC.filter((h) => !h.closed).map((h) => ({
+    "@type": "OpeningHoursSpecification",
+    dayOfWeek: `https://schema.org/${h.dayOfWeek}`,
+    opens: h.opens,
+    closes: h.closes,
+  }));
+
+// Site-wide graph: Organization + LocalBusiness + WebSite + Logo.
+// One `@graph` keeps all top-level entities linked by `@id` so search
+// engines and LLMs can resolve the brand to one canonical record.
+export function siteGraphJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": ["Organization", "OnlineBusiness"],
+        "@id": ORG_ID,
+        name: SITE_NAME,
+        legalName: SITE_LEGAL_NAME,
+        alternateName: ["Aura Bags Lahore", "Aura Bag Manufacturers"],
+        url: SITE_URL,
+        logo: { "@id": LOGO_ID },
+        image: { "@id": LOGO_ID },
+        description: SITE_DESCRIPTION,
+        slogan: SITE_TAGLINE,
+        foundingDate: FOUNDING_DATE,
+        foundingLocation: {
+          "@type": "Place",
+          name: "Lahore, Pakistan",
+          address: postalAddress(),
+        },
+        knowsAbout: [
+          "Ladies bag manufacturing",
+          "Handbag production",
+          "Leather goods crafting",
+          "Custom bag design",
+          "OEM bag manufacturing",
+          "Wholesale handbag supply",
+          "Clutch and tote stitching",
+          "Garment manufacturing",
+        ],
+        areaServed: [
+          { "@type": "Country", name: "Pakistan" },
+          { "@type": "Country", name: "United Arab Emirates" },
+          { "@type": "Country", name: "United Kingdom" },
+          { "@type": "Country", name: "United States" },
+          { "@type": "City", name: "Lahore" },
+          { "@type": "City", name: "Karachi" },
+          { "@type": "City", name: "Islamabad" },
+        ],
+        contactPoint: [
+          {
+            "@type": "ContactPoint",
+            telephone: PHONE_E164,
+            contactType: "customer service",
+            contactOption: "TollFree",
+            areaServed: ["PK", "AE", "GB", "US"],
+            availableLanguage: ["en", "ur"],
+            url: WHATSAPP_URL,
+          },
+          {
+            "@type": "ContactPoint",
+            telephone: PHONE_E164,
+            contactType: "sales",
+            areaServed: ["PK", "AE", "GB", "US"],
+            availableLanguage: ["en", "ur"],
+            url: WHATSAPP_URL,
+          },
+        ],
+        sameAs: SOCIAL_LINKS,
+        makesOffer: [
+          {
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "Product",
+              name: "Handmade ladies handbags",
+            },
+          },
+          {
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "Product",
+              name: "Custom design ladies bags",
+            },
+          },
+          {
+            "@type": "Offer",
+            itemOffered: {
+              "@type": "Service",
+              name: "OEM / wholesale bag manufacturing",
+            },
+          },
+        ],
+      },
+
+      {
+        "@type": ["LocalBusiness", "Store", "ClothingStore"],
+        "@id": LOCALBUSINESS_ID,
+        name: SITE_NAME,
+        alternateName: "Aura Bags Lahore Workshop",
+        description:
+          "Lahore-based ladies bag workshop and storefront. Handmade handbags, clutches, totes, and custom orders. Wholesale and OEM enquiries welcome.",
+        url: SITE_URL,
+        image: { "@id": LOGO_ID },
+        logo: { "@id": LOGO_ID },
+        telephone: PHONE_E164,
+        priceRange: "PKR 700 – PKR 12,000",
+        currenciesAccepted: "PKR",
+        paymentAccepted: ["Cash", "Bank Transfer", "JazzCash", "EasyPaisa"],
+        address: postalAddress(),
+        geo: {
+          "@type": "GeoCoordinates",
+          latitude: GEO.latitude,
+          longitude: GEO.longitude,
+        },
+        hasMap: `https://www.google.com/maps?q=${GEO.latitude},${GEO.longitude}`,
+        openingHoursSpecification: openingHoursSpecification(),
+        areaServed: [
+          { "@type": "Country", name: "Pakistan" },
+          { "@type": "City", name: "Lahore" },
+          { "@type": "City", name: "Karachi" },
+          { "@type": "City", name: "Islamabad" },
+        ],
+        parentOrganization: { "@id": ORG_ID },
+        sameAs: SOCIAL_LINKS,
+        knowsLanguage: ["en", "ur"],
+        makesOffer: [
+          { "@type": "Offer", itemOffered: { "@type": "Product", name: "Ladies handbags" } },
+          { "@type": "Offer", itemOffered: { "@type": "Product", name: "Clutches" } },
+          { "@type": "Offer", itemOffered: { "@type": "Product", name: "Tote bags" } },
+          { "@type": "Offer", itemOffered: { "@type": "Product", name: "Custom hand bags" } },
+        ],
+      },
+
+      {
+        "@type": "WebSite",
+        "@id": WEBSITE_ID,
+        url: SITE_URL,
+        name: SITE_NAME,
+        description: SITE_DESCRIPTION,
+        inLanguage: "en-PK",
+        publisher: { "@id": ORG_ID },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${SITE_URL}/products?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
+      },
+
+      {
+        "@type": "ImageObject",
+        "@id": LOGO_ID,
+        url: LOGO_URL,
+        contentUrl: LOGO_URL,
+        width: 512,
+        height: 512,
+        caption: `${SITE_NAME} logo`,
+      },
+    ],
+  };
+}
+
+// Breadcrumb helper ------------------------------------------------------
 export function breadcrumbsJsonLd(
   items: Array<{ name: string; path: string }>
 ) {
@@ -55,36 +282,136 @@ export function breadcrumbsJsonLd(
   };
 }
 
+// FAQ helper -------------------------------------------------------------
+export function faqJsonLd(items: Array<{ q: string; a: string }>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((it) => ({
+      "@type": "Question",
+      name: it.q,
+      acceptedAnswer: { "@type": "Answer", text: it.a },
+    })),
+  };
+}
+
+// Generic WebPage helper (used by ContactPage, AboutPage) ----------------
+export function webPageJsonLd(opts: {
+  type: "WebPage" | "ContactPage" | "AboutPage" | "CollectionPage";
+  url: string;
+  name: string;
+  description: string;
+  breadcrumb?: ReturnType<typeof breadcrumbsJsonLd>;
+}) {
+  const node: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": opts.type,
+    "@id": `${opts.url}#webpage`,
+    url: opts.url,
+    name: opts.name,
+    description: opts.description,
+    inLanguage: "en-PK",
+    isPartOf: { "@id": WEBSITE_ID },
+    about: { "@id": ORG_ID },
+    publisher: { "@id": ORG_ID },
+    primaryImageOfPage: { "@id": LOGO_ID },
+  };
+  if (opts.breadcrumb) node.breadcrumb = opts.breadcrumb;
+  return node;
+}
+
+// HowTo helper -----------------------------------------------------------
+export function howToJsonLd(opts: {
+  name: string;
+  description: string;
+  totalTime?: string; // ISO 8601 duration e.g. "PT5M"
+  image?: string;
+  steps: Array<{ name: string; text: string; url?: string }>;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: opts.name,
+    description: opts.description,
+    ...(opts.totalTime ? { totalTime: opts.totalTime } : {}),
+    ...(opts.image ? { image: opts.image } : {}),
+    step: opts.steps.map((s, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      name: s.name,
+      text: s.text,
+      ...(s.url ? { url: s.url } : {}),
+    })),
+  };
+}
+
+// Product helper ---------------------------------------------------------
+export function productJsonLd(p: {
+  name: string;
+  slug: string;
+  description?: string;
+  price: number;
+  category: string;
+  images: string[];
+  isActive: boolean;
+}) {
+  const url = `${SITE_URL}/products/${p.slug}`;
+  const primaryImage = p.images[0];
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "@id": `${url}#product`,
+    name: p.name,
+    description:
+      p.description ??
+      `${p.name} — a ${p.category.toLowerCase()} hand-built by ${SITE_NAME} in Lahore, Pakistan.`,
+    sku: p.slug,
+    mpn: p.slug,
+    category: p.category,
+    image: p.images.length > 0 ? p.images : (primaryImage ? [primaryImage] : undefined),
+    url,
+    brand: { "@type": "Brand", name: SITE_NAME, "@id": ORG_ID },
+    manufacturer: { "@id": ORG_ID },
+    countryOfOrigin: { "@type": "Country", name: "Pakistan" },
+    isRelatedTo: { "@id": ORG_ID },
+    offers: {
+      "@type": "Offer",
+      url,
+      priceCurrency: "PKR",
+      price: p.price,
+      priceValidUntil: priceValidUntil(),
+      availability: p.isActive
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
+      seller: { "@id": ORG_ID },
+      areaServed: { "@type": "Country", name: "Pakistan" },
+    },
+  };
+}
+
+// Most engines want a valid future `priceValidUntil`. Roll it forward
+// to one year from build/render time so it never goes stale.
+function priceValidUntil(): string {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+// Backwards-compat exports for any inline usage left in the codebase.
+// (Same shape, but driven by the centralised graph nodes.)
 export const ORG_JSON_LD = {
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "@id": `${SITE_URL}/#organization`,
+  "@type": "Organization",
+  "@id": ORG_ID,
   name: SITE_NAME,
-  alternateName: "Aura Bags Lahore",
-  description: SITE_DESCRIPTION,
   url: SITE_URL,
-  telephone: "+92 325 8828885",
-  image: `${SITE_URL}/icon.svg`,
-  logo: `${SITE_URL}/icon.svg`,
-  priceRange: "PKR",
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "Lahore",
-    addressRegion: "Punjab",
-    addressCountry: "PK",
-  },
-  areaServed: [
-    { "@type": "Country", name: "Pakistan" },
-    { "@type": "City", name: "Lahore" },
-    { "@type": "City", name: "Karachi" },
-    { "@type": "City", name: "Islamabad" },
-  ],
-  sameAs: ["https://wa.me/923258828885"],
-  makesOffer: {
-    "@type": "Offer",
-    itemOffered: {
-      "@type": "Product",
-      name: "Handmade ladies bags, clutches, totes, and custom handbags",
-    },
-  },
+  logo: LOGO_URL,
+};
+export const WEBSITE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": WEBSITE_ID,
+  url: SITE_URL,
+  name: SITE_NAME,
 };

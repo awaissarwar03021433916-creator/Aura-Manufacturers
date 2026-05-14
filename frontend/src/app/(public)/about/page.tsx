@@ -1,4 +1,10 @@
 import Reveal from "@/components/Reveal";
+import {
+  SITE_URL,
+  breadcrumbsJsonLd,
+  faqJsonLd,
+  webPageJsonLd,
+} from "@/lib/seo";
 
 import type { Metadata } from "next";
 export const metadata: Metadata = {
@@ -14,9 +20,41 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about" },
 };
 
+const ABOUT_FAQ = [
+  {
+    q: "Are bags made in-house or outsourced?",
+    a: "100% in-house. Cutting, stitching, edge finishing, and final QC happen in our Lahore workshop. We do not outsource production to third-party units.",
+  },
+  {
+    q: "What kinds of bags do you specialise in?",
+    a: "Ladies handbags, clutches, totes, crossbody bags, mini bags, and structured top-handle styles. We also stitch fully custom one-of-one bags from a reference image.",
+  },
+  {
+    q: "Do you supply to retailers outside Pakistan?",
+    a: "Yes — we accept wholesale and OEM enquiries from buyers in the UAE, UK, USA, and EU. WhatsApp us with your quantities and target lead time for a written PI.",
+  },
+];
+
 export default function AboutPage() {
+  const crumbs = breadcrumbsJsonLd([
+    { name: "Home", path: "/" },
+    { name: "About", path: "/about" },
+  ]);
+  const aboutPage = webPageJsonLd({
+    type: "AboutPage",
+    url: `${SITE_URL}/about`,
+    name: "About Aura Manufacturers — Ladies Bag Workshop in Lahore",
+    description:
+      "About Aura Manufacturers — a Lahore-based ladies bag workshop. Made-to-order handbags, clutches, totes, and custom designs. Founded 2015.",
+    breadcrumb: crumbs,
+  });
+  const faq = faqJsonLd(ABOUT_FAQ);
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutPage) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <section className="section-cream relative overflow-hidden">
         <div className="blob blob-gold blob-drift-slow w-[26rem] h-[26rem] -right-24 -top-20 opacity-40" />
         <div className="blob blob-camel w-[18rem] h-[18rem] -left-16 top-32 opacity-25" />

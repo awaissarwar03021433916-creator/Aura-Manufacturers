@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import HeroSection from "@/components/HeroSection";
 import Reveal from "@/components/Reveal";
+import { SITE_URL, faqJsonLd, webPageJsonLd, breadcrumbsJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Ladies Bag Manufacturers in Lahore, Pakistan — Aura Manufacturers",
@@ -10,9 +11,44 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
+const HOME_FAQ = [
+  {
+    q: "Where is Aura Manufacturers located?",
+    a: "Aura Manufacturers is a ladies bag workshop in Lahore, Pakistan — Mehar Fayyaz Colony, Salamat pura Road, Fateh Garh, Lahore 54840. We ship across Pakistan and accept export enquiries.",
+  },
+  {
+    q: "Do you manufacture custom ladies bags?",
+    a: "Yes. Send us a reference image on WhatsApp (+92 325 8828885) and we'll quote fabric, hardware, price, and timeline. Custom orders are stitched in our own workshop, not outsourced.",
+  },
+  {
+    q: "What is the typical lead time for a hand bag?",
+    a: "Stock-style bags are made-to-order in 5–10 working days. Custom designs typically take 10–18 working days depending on materials and finish.",
+  },
+  {
+    q: "Do you accept wholesale or OEM orders?",
+    a: "Yes. We accept wholesale orders from 12 pieces and OEM/private-label production from 100 pieces per design. WhatsApp us with your tech pack or sample for a written PI.",
+  },
+  {
+    q: "How do I place an order?",
+    a: "All orders are confirmed on WhatsApp. Browse our products, click 'Order on WhatsApp', and our shop will reply with availability, price, and dispatch timing.",
+  },
+];
+
 export default function HomePage() {
+  const webpage = webPageJsonLd({
+    type: "WebPage",
+    url: `${SITE_URL}/`,
+    name: "Ladies Bag Manufacturers in Lahore, Pakistan",
+    description:
+      "Aura Manufacturers — handmade ladies bags, handbags, clutches, totes, and OEM/wholesale bag manufacturing from a Lahore, Pakistan workshop.",
+    breadcrumb: breadcrumbsJsonLd([{ name: "Home", path: "/" }]),
+  });
+  const faq = faqJsonLd(HOME_FAQ);
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webpage) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <HeroSection />
 
       <div className="mx-auto max-w-7xl px-6 lg:px-10">

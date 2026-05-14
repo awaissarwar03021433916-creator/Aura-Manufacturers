@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Reveal from "@/components/Reveal";
 import { getAllPosts, getPost } from "@/lib/blog";
-import { SITE_NAME, SITE_URL } from "@/lib/seo";
+import { SITE_URL, ORG_ID, LOGO_ID } from "@/lib/seo";
 
 type Params = { params: { slug: string } };
 
@@ -131,19 +131,23 @@ export default function BlogPostPage({ params }: Params) {
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
+    "@id": `${url}#article`,
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     headline: post.title,
+    name: post.title,
     description: post.description,
     image: [post.hero.src],
-    author: { "@type": "Organization", name: post.author, url: SITE_URL },
-    publisher: {
-      "@type": "Organization",
-      name: SITE_NAME,
-      logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.svg` },
-    },
+    author: { "@type": "Organization", name: post.author, url: SITE_URL, "@id": ORG_ID },
+    publisher: { "@id": ORG_ID },
+    isPartOf: { "@id": `${SITE_URL}/blog#blog` },
     datePublished: post.publishedAt,
     dateModified: post.publishedAt,
+    inLanguage: "en-PK",
     keywords: post.tags.join(", "),
+    articleSection: post.tags[0],
+    about: { "@id": ORG_ID },
+    thumbnailUrl: post.hero.src,
+    logo: { "@id": LOGO_ID },
   };
 
   const breadcrumbsJsonLd = {

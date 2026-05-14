@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { fetchProduct } from "@/lib/api";
 import { whatsappLink, productInquiryMessage } from "@/lib/whatsapp";
 import Reveal from "@/components/Reveal";
-import { SITE_NAME, SITE_URL, breadcrumbsJsonLd } from "@/lib/seo";
+import { SITE_NAME, SITE_URL, breadcrumbsJsonLd, productJsonLd } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const product = await fetchProduct(params.slug);
@@ -39,25 +39,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
   const product = await fetchProduct(params.slug);
   if (!product) notFound();
 
-  const productJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    description: product.description,
-    sku: product.slug,
-    category: product.category,
-    image: product.images,
-    brand: { "@type": "Brand", name: SITE_NAME },
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "PKR",
-      price: product.price,
-      availability: product.isActive
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
-      url: `${SITE_URL}/products/${product.slug}`,
-    },
-  };
+  const product_ld = productJsonLd(product);
 
   const productUrl = `${SITE_URL}/products/${product.slug}`;
   const link = whatsappLink(productInquiryMessage(product.name, productUrl));
@@ -71,7 +53,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
     <section className="section-cream relative overflow-hidden">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(product_ld) }}
       />
       <script
         type="application/ld+json"

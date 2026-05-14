@@ -1,5 +1,10 @@
 import { WHATSAPP_NUMBER, whatsappLink } from "@/lib/whatsapp";
 import Reveal from "@/components/Reveal";
+import {
+  SITE_URL,
+  breadcrumbsJsonLd,
+  webPageJsonLd,
+} from "@/lib/seo";
 
 import type { Metadata } from "next";
 export const metadata: Metadata = {
@@ -16,9 +21,23 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   const directLink = whatsappLink("Hi Aura Manufacturers, I'd like to know more.");
+  const crumbs = breadcrumbsJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Contact", path: "/contact" },
+  ]);
+  const contactPage = webPageJsonLd({
+    type: "ContactPage",
+    url: `${SITE_URL}/contact`,
+    name: "Contact Aura Manufacturers — Lahore Hand Bag Workshop",
+    description:
+      "Contact Aura Manufacturers in Lahore. WhatsApp +92 325 8828885 for retail orders, custom bags, wholesale and OEM enquiries.",
+    breadcrumb: crumbs,
+  });
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(contactPage) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }} />
       <section className="section-cream relative overflow-hidden">
         <div className="blob blob-gold blob-drift-slow w-[24rem] h-[24rem] -right-20 -top-16 opacity-35" />
         <div className="blob blob-camel w-[18rem] h-[18rem] -left-16 top-24 opacity-25" />

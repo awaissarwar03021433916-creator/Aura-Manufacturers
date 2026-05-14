@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { fetchProducts } from "@/lib/api";
 import Reveal from "@/components/Reveal";
-import { SITE_URL, breadcrumbsJsonLd } from "@/lib/seo";
+import {
+  SITE_URL,
+  breadcrumbsJsonLd,
+  webPageJsonLd,
+  ORG_ID,
+} from "@/lib/seo";
 
 import type { Metadata } from "next";
 export const metadata: Metadata = {
@@ -26,6 +31,18 @@ export const metadata: Metadata = {
 
 export default async function ProductsPage() {
   const products = await fetchProducts();
+  const crumbs = breadcrumbsJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Bags", path: "/products" },
+  ]);
+  const collectionPage = webPageJsonLd({
+    type: "CollectionPage",
+    url: `${SITE_URL}/products`,
+    name: "Hand Bags for Women — Aura Manufacturers, Lahore",
+    description:
+      "Handmade ladies hand bags by Aura Manufacturers — totes, clutches, and crossbody styles produced in Lahore, Pakistan and shipped nationwide.",
+    breadcrumb: crumbs,
+  });
   const itemListJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -36,17 +53,37 @@ export default async function ProductsPage() {
       "@type": "ListItem",
       position: i + 1,
       url: `${SITE_URL}/products/${p.slug}`,
-      name: p.name,
-      image: p.images[0],
+      item: {
+        "@type": "Product",
+        "@id": `${SITE_URL}/products/${p.slug}#product`,
+        name: p.name,
+        sku: p.slug,
+        category: p.category,
+        url: `${SITE_URL}/products/${p.slug}`,
+        image: p.images[0],
+        brand: { "@id": ORG_ID },
+        manufacturer: { "@id": ORG_ID },
+        offers: {
+          "@type": "Offer",
+          url: `${SITE_URL}/products/${p.slug}`,
+          priceCurrency: "PKR",
+          price: p.price,
+          availability: p.isActive
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+          itemCondition: "https://schema.org/NewCondition",
+          seller: { "@id": ORG_ID },
+        },
+      },
     })),
   };
-  const crumbs = breadcrumbsJsonLd([
-    { name: "Home", path: "/" },
-    { name: "Bags", path: "/products" },
-  ]);
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPage) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
