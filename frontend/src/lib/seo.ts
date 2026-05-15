@@ -5,9 +5,22 @@
 // give AI engines (ChatGPT, Gemini, Perplexity) a single canonical
 // "who we are / what we sell / how to reach us" graph.
 
+// Canonical production origin. Always no trailing slash.
+// Override locally with NEXT_PUBLIC_SITE_URL=http://localhost:3000 in .env.local.
+// Production Vercel env should set NEXT_PUBLIC_SITE_URL=https://auramanufacturers.com.
+// If the env var is missing (e.g. on a Vercel preview that wasn't given a Production scope),
+// we still fall back to the canonical production domain so canonical/OG/sitemap URLs
+// never accidentally point at a *.vercel.app host.
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-  "https://aura-manufacturers.com";
+  "https://auramanufacturers.com";
+
+// True only on the production Vercel deployment (or any non-Vercel build, e.g. local
+// `next build && next start`). Preview and Development deployments on Vercel get
+// `noindex, nofollow` so the *.vercel.app hostnames never enter Google's index.
+export const INDEXABLE =
+  process.env.VERCEL_ENV !== "preview" &&
+  process.env.VERCEL_ENV !== "development";
 
 export const SITE_NAME = "Aura Manufacturers";
 export const SITE_LEGAL_NAME = "Aura Manufacturers";

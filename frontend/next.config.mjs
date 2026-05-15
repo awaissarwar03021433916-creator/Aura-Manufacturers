@@ -27,13 +27,26 @@ const nextConfig = {
   },
 
   async headers() {
+    // Build-time check: on Vercel preview / development deployments emit
+    // X-Robots-Tag: noindex so *.vercel.app hosts never get indexed even if
+    // a crawler ignores robots.txt or hits an asset directly.
+    const isPreviewDeployment =
+      process.env.VERCEL_ENV === "preview" ||
+      process.env.VERCEL_ENV === "development";
+
+    const baseHeaders = [
+      { key: "X-DNS-Prefetch-Control", value: "on" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+    ];
+
+    if (isPreviewDeployment) {
+      baseHeaders.push({ key: "X-Robots-Tag", value: "noindex, nofollow" });
+    }
+
     return [
       {
         source: "/:path*",
-        headers: [
-          { key: "X-DNS-Prefetch-Control", value: "on" },
-          { key: "X-Content-Type-Options", value: "nosniff" },
-        ],
+        headers: baseHeaders,
       },
       {
         source: "/_next/static/:path*",

@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { SITE_DESCRIPTION, SITE_KEYWORDS, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { INDEXABLE, SITE_DESCRIPTION, SITE_KEYWORDS, SITE_NAME, SITE_URL } from "@/lib/seo";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 export const viewport: Viewport = {
@@ -54,17 +54,25 @@ export const metadata: Metadata = {
     languages: { "en-PK": "/", "x-default": "/" },
   },
   formatDetection: { email: false, address: false, telephone: false },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
-    },
-  },
+  robots: INDEXABLE
+    ? {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          "max-image-preview": "large",
+          "max-snippet": -1,
+          "max-video-preview": -1,
+        },
+      }
+    : {
+        // Vercel preview / development deployments — keep them out of every index.
+        index: false,
+        follow: false,
+        nocache: true,
+        googleBot: { index: false, follow: false, noimageindex: true },
+      },
   openGraph: {
     type: "website",
     locale: "en_PK",
