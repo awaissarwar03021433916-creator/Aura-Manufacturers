@@ -6,14 +6,18 @@
 // "who we are / what we sell / how to reach us" graph.
 
 // Canonical production origin. Always no trailing slash.
+// This MUST stay identical to the host that *.vercel.app traffic is
+// 301-redirected to (see `redirects()` in next.config.mjs). If canonical tags,
+// OG URLs and the sitemap pointed at a different host than the redirect target,
+// Google would see conflicting canonical signals and the consolidation would fail.
 // Override locally with NEXT_PUBLIC_SITE_URL=http://localhost:3000 in .env.local.
-// Production Vercel env should set NEXT_PUBLIC_SITE_URL=https://auramanufacturers.com.
+// Production Vercel env should set NEXT_PUBLIC_SITE_URL=https://www.auramanufacturers.com.
 // If the env var is missing (e.g. on a Vercel preview that wasn't given a Production scope),
 // we still fall back to the canonical production domain so canonical/OG/sitemap URLs
 // never accidentally point at a *.vercel.app host.
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-  "https://auramanufacturers.com";
+  "https://www.auramanufacturers.com";
 
 // True only on the production Vercel deployment (or any non-Vercel build, e.g. local
 // `next build && next start`). Preview and Development deployments on Vercel get

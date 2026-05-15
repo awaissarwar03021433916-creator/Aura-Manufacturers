@@ -26,6 +26,39 @@ const nextConfig = {
     formats: ["image/avif", "image/webp"],
   },
 
+  // ---------------------------------------------------------------------------
+  // Canonical-host enforcement.
+  // Every *.vercel.app hostname — the stable project alias
+  // (aura-manufacturers.vercel.app) AND every per-deployment / preview URL
+  // (aura-manufacturers-git-<branch>-<team>.vercel.app, <hash>.vercel.app) — is
+  // 301-redirected to the single production domain. The pathname (:path*) and
+  // the query string are carried across, so deep links and tracked URLs survive.
+  // This collapses every duplicate host onto one canonical origin: Google never
+  // indexes a vercel.app copy and all ranking signals consolidate on www.
+  //
+  // Safe by construction:
+  //  - Only fires when the request Host header *ends with* `.vercel.app`, so
+  //    requests to www.auramanufacturers.com are never touched.
+  //  - The destination is a hard-coded absolute URL, so it cannot become an
+  //    open redirect from a spoofed Host header.
+  //  - Redirects are an HTTP-time routing rule, evaluated before middleware and
+  //    rendering — they do not run during `next build`, so Vercel deployments
+  //    (including the build/readiness checks on the vercel.app URL) are unaffected.
+  // ---------------------------------------------------------------------------
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: ".*\\.vercel\\.app$" }],
+        destination: "https://www.auramanufacturers.com/:path*",
+        // Use `statusCode: 301` explicitly — Next.js' `permanent: true` shortcut
+        // emits a 308. Both are permanent and SEO-equivalent to Google, but the
+        // requirement here is a literal 301.
+        statusCode: 301,
+      },
+    ];
+  },
+
   async headers() {
     // Build-time check: on Vercel preview / development deployments emit
     // X-Robots-Tag: noindex so *.vercel.app hosts never get indexed even if
