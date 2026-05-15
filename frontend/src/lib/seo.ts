@@ -104,6 +104,34 @@ export const LOGO_ID           = `${SITE_URL}/#logo`;
 const LOGO_URL =
   process.env.NEXT_PUBLIC_LOGO_URL ?? `${SITE_URL}/icon.svg`;
 
+// Google requires a valid raster image URL on every Product. When a product
+// has no images in the DB, fall back to this brand-owned hero so the schema
+// always validates. PNG/JPG only — SVG and data: URLs trip the Rich Results test.
+export const DEFAULT_PRODUCT_IMAGE =
+  process.env.NEXT_PUBLIC_DEFAULT_PRODUCT_IMAGE ??
+  "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=1200&q=80";
+
+// Convert any product image reference into an absolute https URL. Google
+// rejects relative paths in JSON-LD image fields.
+function toAbsoluteUrl(u: string | undefined | null): string | null {
+  if (!u) return null;
+  const trimmed = u.trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith("//")) return `https:${trimmed}`;
+  if (trimmed.startsWith("/")) return `${SITE_URL}${trimmed}`;
+  return `${SITE_URL}/${trimmed}`;
+}
+
+// Normalise a product's images into a guaranteed-non-empty array of absolute
+// URLs. Used by both the detail-page Product node and the listing ItemList.
+export function productImages(images: ReadonlyArray<string> | undefined): string[] {
+  const cleaned = (images ?? [])
+    .map(toAbsoluteUrl)
+    .filter((v): v is string => typeof v === "string" && v.length > 0);
+  return cleaned.length > 0 ? cleaned : [DEFAULT_PRODUCT_IMAGE];
+}
+
 const postalAddress = () => ({
   "@type": "PostalAddress",
   streetAddress: ADDRESS.streetAddress,
@@ -359,6 +387,11 @@ export function howToJsonLd(opts: {
 }
 
 // Product helper ---------------------------------------------------------
+// Builds a Product node that satisfies Google's Rich Results requirements:
+//   required: name, image, offers{price, priceCurrency, availability}
+//   strongly recommended: description, brand (with inline name), url, sku
+// `image` is always coerced to a non-empty array of absolute URLs via
+// `productImages()` so the snippet never fails validation on imageless rows.
 export function productJsonLd(p: {
   name: string;
   slug: string;
@@ -369,26 +402,29 @@ export function productJsonLd(p: {
   isActive: boolean;
 }) {
   const url = `${SITE_URL}/products/${p.slug}`;
-  const primaryImage = p.images[0];
+  const images = productImages(p.images);
+  const description =
+    (p.description && p.description.trim().length > 0
+      ? p.description
+      : `${p.name} — a ${p.category.toLowerCase()} hand-built by ${SITE_NAME} in Lahore, Pakistan.`);
+
   return {
     "@context": "https://schema.org",
     "@type": "Product",
     "@id": `${url}#product`,
     name: p.name,
-    description:
-      p.description ??
-      `${p.name} — a ${p.category.toLowerCase()} hand-built by ${SITE_NAME} in Lahore, Pakistan.`,
+    description,
     sku: p.slug,
     mpn: p.slug,
     category: p.category,
-    image: p.images.length > 0 ? p.images : (primaryImage ? [primaryImage] : undefined),
+    image: images,
     url,
-    brand: { "@type": "Brand", name: SITE_NAME, "@id": ORG_ID },
-    manufacturer: { "@id": ORG_ID },
+    brand: { "@type": "Brand", name: SITE_NAME },
+    manufacturer: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
     countryOfOrigin: { "@type": "Country", name: "Pakistan" },
-    isRelatedTo: { "@id": ORG_ID },
     offers: {
       "@type": "Offer",
+      "@id": `${url}#offer`,
       url,
       priceCurrency: "PKR",
       price: p.price,
@@ -397,8 +433,53 @@ export function productJsonLd(p: {
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
-      seller: { "@id": ORG_ID },
+      seller: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
       areaServed: { "@type": "Country", name: "Pakistan" },
+      hasMerchantReturnPolicy: merchantReturnPolicy(),
+      shippingDetails: offerShippingDetails(),
+    },
+  };
+}
+
+// Google nudges Product results to declare return + shipping policy. These
+// reflect the made-to-order WhatsApp workflow: orders are confirmed manually,
+// so we publish a 0-day return window (custom-made items are non-returnable)
+// and a pan-Pakistan shipping spec.
+function merchantReturnPolicy() {
+  return {
+    "@type": "MerchantReturnPolicy",
+    applicableCountry: "PK",
+    returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+    merchantReturnLink: `${SITE_URL}/contact`,
+  };
+}
+
+function offerShippingDetails() {
+  return {
+    "@type": "OfferShippingDetails",
+    shippingDestination: {
+      "@type": "DefinedRegion",
+      addressCountry: "PK",
+    },
+    shippingRate: {
+      "@type": "MonetaryAmount",
+      value: 0,
+      currency: "PKR",
+    },
+    deliveryTime: {
+      "@type": "ShippingDeliveryTime",
+      handlingTime: {
+        "@type": "QuantitativeValue",
+        minValue: 5,
+        maxValue: 10,
+        unitCode: "DAY",
+      },
+      transitTime: {
+        "@type": "QuantitativeValue",
+        minValue: 2,
+        maxValue: 5,
+        unitCode: "DAY",
+      },
     },
   };
 }

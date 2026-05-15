@@ -3,9 +3,10 @@ import { fetchProducts } from "@/lib/api";
 import Reveal from "@/components/Reveal";
 import {
   SITE_URL,
+  SITE_NAME,
   breadcrumbsJsonLd,
   webPageJsonLd,
-  ORG_ID,
+  productImages,
 } from "@/lib/seo";
 
 import type { Metadata } from "next";
@@ -43,39 +44,54 @@ export default async function ProductsPage() {
       "Handmade ladies hand bags by Aura Manufacturers — totes, clutches, and crossbody styles produced in Lahore, Pakistan and shipped nationwide.",
     breadcrumb: crumbs,
   });
+  // Each Product node inside the ItemList must independently validate against
+  // Google's Product rich-result schema — Google parses them in isolation and
+  // does NOT resolve `@id` references back to the site-wide Organization graph.
+  // So every entry inlines name, description, image (absolute URL), brand,
+  // and a complete offers block. Limited to 30 to keep payload reasonable.
   const itemListJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: "Hand Bags for Women — Aura Manufacturers, Lahore",
     itemListOrder: "https://schema.org/ItemListOrderDescending",
     numberOfItems: products.length,
-    itemListElement: products.slice(0, 30).map((p, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      url: `${SITE_URL}/products/${p.slug}`,
-      item: {
-        "@type": "Product",
-        "@id": `${SITE_URL}/products/${p.slug}#product`,
-        name: p.name,
-        sku: p.slug,
-        category: p.category,
-        url: `${SITE_URL}/products/${p.slug}`,
-        image: p.images[0],
-        brand: { "@id": ORG_ID },
-        manufacturer: { "@id": ORG_ID },
-        offers: {
-          "@type": "Offer",
-          url: `${SITE_URL}/products/${p.slug}`,
-          priceCurrency: "PKR",
-          price: p.price,
-          availability: p.isActive
-            ? "https://schema.org/InStock"
-            : "https://schema.org/OutOfStock",
-          itemCondition: "https://schema.org/NewCondition",
-          seller: { "@id": ORG_ID },
+    itemListElement: products.slice(0, 30).map((p, i) => {
+      const url = `${SITE_URL}/products/${p.slug}`;
+      const images = productImages(p.images);
+      const description =
+        (p.description && p.description.trim().length > 0
+          ? p.description
+          : `${p.name} — a ${p.category?.toLowerCase() ?? "ladies bag"} hand-built by ${SITE_NAME} in Lahore, Pakistan.`);
+      return {
+        "@type": "ListItem",
+        position: i + 1,
+        url,
+        item: {
+          "@type": "Product",
+          "@id": `${url}#product`,
+          name: p.name,
+          description,
+          sku: p.slug,
+          mpn: p.slug,
+          category: p.category,
+          url,
+          image: images,
+          brand: { "@type": "Brand", name: SITE_NAME },
+          manufacturer: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+          offers: {
+            "@type": "Offer",
+            url,
+            priceCurrency: "PKR",
+            price: p.price,
+            availability: p.isActive
+              ? "https://schema.org/InStock"
+              : "https://schema.org/OutOfStock",
+            itemCondition: "https://schema.org/NewCondition",
+            seller: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+          },
         },
-      },
-    })),
+      };
+    }),
   };
 
   return (
