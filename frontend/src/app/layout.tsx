@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { INDEXABLE, SITE_DESCRIPTION, SITE_KEYWORDS, SITE_NAME, SITE_URL } from "@/lib/seo";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import FacebookPixel from "@/components/FacebookPixel";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -97,7 +98,19 @@ export const metadata: Metadata = {
       "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=1200&q=80",
     ],
   },
-  icons: { icon: "/icon.svg" },
+  // favicon.ico is always auto-linked from the app/ file convention (and the
+  // web app manifest from app/manifest.ts). Declaring `icons` here takes over
+  // the remaining icon/apple links, so we list them all explicitly to
+  // guarantee a scalable SVG (high-DPI tabs), a PNG fallback, and the iOS
+  // home-screen icon. The referenced files are still served from their app/
+  // routes. Ordered most- to least-preferred for browsers.
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "96x96" },
+    ],
+    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
+  },
   verification: {
     // Paste your Google Search Console TXT/HTML verification token below when you set it up.
     // google: "PASTE_GOOGLE_SITE_VERIFICATION_TOKEN_HERE",
@@ -132,6 +145,7 @@ export default function RootLayout({
       >
         {children}
         <GoogleAnalytics />
+        <FacebookPixel />
       </body>
     </html>
   );

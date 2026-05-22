@@ -1,6 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#1A1410"/>
-  <path d="M9 12h14l-1.2 11.5a1.5 1.5 0 0 1-1.5 1.3H11.7a1.5 1.5 0 0 1-1.5-1.3L9 12Z" fill="none" stroke="#C9A961" stroke-width="1.6" stroke-linejoin="round"/>
-  <path d="M12.5 12V9.5a3.5 3.5 0 0 1 7 0V12" fill="none" stroke="#C9A961" stroke-width="1.6" stroke-linecap="round"/>
-  <circle cx="16" cy="17.5" r="0.9" fill="#C9A961"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Aura Manufacturers">
+  <rect x="1" y="1" width="30" height="30" rx="6.4" fill="#FAF7F2"/>
+  <!-- loop handles (cognac outline, then gold) -->
+  <g fill="none" stroke="#5C4A33" stroke-width="2.6" stroke-linecap="butt">
+    <path d="M9.7 13.4 A3 3 0 0 1 15.7 13.4"/>
+    <path d="M16.3 13.4 A3 3 0 0 1 22.3 13.4"/>
+  </g>
+  <g fill="none" stroke="#C9A961" stroke-width="1.44" stroke-linecap="butt">
+    <path d="M9.7 13.4 A3 3 0 0 1 15.7 13.4"/>
+    <path d="M16.3 13.4 A3 3 0 0 1 22.3 13.4"/>
+  </g>
+  <!-- tapered tote body -->
+  <path d="M9.4 13.4 L22.6 13.4 L24 24.4 L8 24.4 Z" fill="#C9A961" stroke="#5C4A33" stroke-width="1.24" stroke-linejoin="round"/>
 </svg>
