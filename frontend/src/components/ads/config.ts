@@ -1,7 +1,7 @@
 // Ad network configuration + on/off switches.
 //
 // Switches are NEXT_PUBLIC_ env vars (inlined at build time — redeploy after changing):
-//   NEXT_PUBLIC_ADS_ENABLED=false    master kill-switch for every ad below (default: on)
+//   NEXT_PUBLIC_ADS_ENABLED=true     master switch for every ad below   (default: off)
 //   NEXT_PUBLIC_ADS_SOCIAL_BAR=true  enable the Social Bar overlay      (default: off)
 //   NEXT_PUBLIC_ADS_POPUNDER=true    enable the Popunder                (default: off)
 //
@@ -15,7 +15,7 @@ function flag(value: string | undefined, fallback: boolean): boolean {
 
 export const ADS_ENABLED =
   process.env.NODE_ENV === "production" &&
-  flag(process.env.NEXT_PUBLIC_ADS_ENABLED, true);
+  flag(process.env.NEXT_PUBLIC_ADS_ENABLED, false);
 
 export const SOCIAL_BAR_ENABLED =
   ADS_ENABLED && flag(process.env.NEXT_PUBLIC_ADS_SOCIAL_BAR, false);
