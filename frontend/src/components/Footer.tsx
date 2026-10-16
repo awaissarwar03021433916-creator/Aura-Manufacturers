@@ -100,6 +100,31 @@ export default function Footer() {
           <p>© {new Date().getFullYear()} Aura Manufacturers · Made in Pakistan</p>
         </div>
       </div>
+
+      <div className="relative border-t border-[#2E251D] bg-[#151009]">
+        <div className="mx-auto max-w-7xl px-6 lg:px-10 py-5 flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2 text-center text-[0.7rem] uppercase tracking-[0.18em] text-[#FAF7F2]/55">
+          <p>
+            <span className="text-[#FAF7F2]/40">Site built by </span>
+            <a
+              href="https://zyverralabs.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#C9A961] transition-colors duration-400 hover:text-[#FAF7F2]"
+            >
+              Zyverra Labs
+            </a>
+          </p>
+          <p className="normal-case tracking-[0.08em]">
+            <span className="text-[#FAF7F2]/40">Contact · </span>
+            <a
+              href="mailto:hello@zyverralabs.com"
+              className="transition-colors duration-400 hover:text-[#C9A961]"
+            >
+              hello@zyverralabs.com
+            </a>
+          </p>
+        </div>
+      </div>
     </footer>
   );
 }
