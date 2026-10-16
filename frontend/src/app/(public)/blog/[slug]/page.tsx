@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Reveal from "@/components/Reveal";
+import { NativeBannerAd } from "@/components/ads/AdUnits";
 import { getAllPosts, getPost } from "@/lib/blog";
 import { SITE_URL, ORG_ID, LOGO_ID } from "@/lib/seo";
 
@@ -232,6 +233,8 @@ export default function BlogPostPage({ params }: Params) {
                 </ul>
               </aside>
             </Reveal>
+
+            <NativeBannerAd className="mt-16" />
           </div>
         </section>
 

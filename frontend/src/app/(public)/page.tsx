@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import HeroSection from "@/components/HeroSection";
 import Reveal from "@/components/Reveal";
+import { Banner728x90, NativeBannerAd } from "@/components/ads/AdUnits";
 import { SITE_URL, faqJsonLd, webPageJsonLd, breadcrumbsJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -109,6 +110,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <Banner728x90 />
+
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <div className="divider-gold py-6">
           <span className="dot" />
@@ -152,6 +155,8 @@ export default function HomePage() {
           </Reveal>
         </div>
       </section>
+
+      <NativeBannerAd className="mx-auto max-w-7xl px-6 lg:px-10 py-10" />
 
       {/* VIEW BAGS — secondary CTA */}
       <section

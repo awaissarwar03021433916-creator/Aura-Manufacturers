@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { fetchProducts } from "@/lib/api";
 import Reveal from "@/components/Reveal";
+import { NativeBannerAd } from "@/components/ads/AdUnits";
 import {
   SITE_URL,
   SITE_NAME,
@@ -213,6 +214,7 @@ export default async function ProductsPage() {
               ))}
             </div>
           )}
+          {products.length > 0 && <NativeBannerAd className="mt-20" />}
         </div>
       </section>
     </>

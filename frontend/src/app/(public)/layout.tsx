@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BrowseBagsCTA from "@/components/BrowseBagsCTA";
 import { siteGraphJsonLd } from "@/lib/seo";
+import SiteAdScripts from "@/components/ads/SiteAdScripts";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -14,6 +15,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <main id="main" className="min-h-screen">{children}</main>
       <BrowseBagsCTA />
       <Footer />
+      <SiteAdScripts />
     </>
   );
 }

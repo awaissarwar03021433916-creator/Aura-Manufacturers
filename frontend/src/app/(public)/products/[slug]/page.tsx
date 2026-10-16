@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { fetchProduct } from "@/lib/api";
 import { whatsappLink, productInquiryMessage } from "@/lib/whatsapp";
 import Reveal from "@/components/Reveal";
+import { Banner160x300 } from "@/components/ads/AdUnits";
 import { SITE_NAME, SITE_URL, breadcrumbsJsonLd, productJsonLd } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -138,6 +139,8 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
                 <p>Pakistan</p>
               </div>
             </div>
+
+            <Banner160x300 className="mt-12" />
           </div>
         </Reveal>
       </div>
