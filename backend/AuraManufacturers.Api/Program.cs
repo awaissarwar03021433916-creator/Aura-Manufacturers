@@ -2,8 +2,9 @@ using AuraManufacturers.Api.Data;
 using AuraManufacturers.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,32 +68,60 @@ builder.Services.AddDbContextPool<AppDbContext>(opts =>
         .EnableSensitiveDataLogging());
 
 
-// 🔐 JWT
-var jwtSecret = builder.Configuration["Supabase:JwtSecret"];
+// 🔐 JWT — Supabase signs user access tokens with asymmetric ES256 keys published at
+//    {Supabase:Url}/auth/v1/.well-known/jwks.json. Only those keys are trusted; the legacy
+//    HS256 secret is deliberately NOT accepted (anyone holding it could mint tokens).
+var supabaseUrl = builder.Configuration["Supabase:Url"]?.TrimEnd('/');
 
-if (string.IsNullOrEmpty(jwtSecret))
+if (string.IsNullOrEmpty(supabaseUrl))
 {
-    throw new Exception("❌ JWT Secret is missing");
+    throw new Exception("❌ Supabase:Url is missing");
 }
+
+var supabaseIssuer = $"{supabaseUrl}/auth/v1";
+var jwksUrl = $"{supabaseIssuer}/.well-known/jwks.json";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.MapInboundClaims = false;
+        options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+            jwksUrl,
+            new SupabaseJwksRetriever(),
+            new HttpDocumentRetriever { RequireHttps = jwksUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase) });
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
+            ValidateIssuer = true,
+            ValidIssuer = supabaseIssuer,
             ValidateAudience = true,
             ValidAudience = "authenticated",
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSecret))
+            ValidAlgorithms = new[] { SecurityAlgorithms.EcdsaSha256, SecurityAlgorithms.RsaSha256 }
         };
     });
 
+// 🛡️ Admin = signed-in Supabase user whose email is on the Admin:Emails allowlist
+//    (comma-separated; set via env var Admin__Emails). Public sign-up is enabled on the
+//    Supabase project, so "authenticated" alone is NOT enough once the allowlist is set.
+var adminEmails = new HashSet<string>(
+    (builder.Configuration["Admin:Emails"] ?? "")
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+    StringComparer.OrdinalIgnoreCase);
+
+if (adminEmails.Count == 0)
+{
+    Console.WriteLine("⚠️ Admin:Emails is empty — ANY signed-in Supabase user is treated as admin. Set Admin__Emails to lock this down.");
+}
+
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("Admin", p => p.RequireAuthenticatedUser());
+    options.AddPolicy("Admin", p => p
+        .RequireAuthenticatedUser()
+        .RequireAssertion(ctx =>
+            adminEmails.Count == 0 ||
+            (ctx.User.FindFirst("email")?.Value is { } email && adminEmails.Contains(email))));
 });
 
 builder.Services.AddSingleton<StorageService>();

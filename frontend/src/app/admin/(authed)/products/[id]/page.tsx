@@ -1,12 +1,17 @@
 import { notFound } from "next/navigation";
 import ProductForm from "../ProductForm";
 import type { Product } from "@/lib/api";
+import { getSupabaseServer } from "@/lib/supabase-server";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000";
 
 async function fetchProductById(id: string): Promise<Product | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/products/admin/all`, { cache: "no-store" });
+    const { data: { session } } = await getSupabaseServer().auth.getSession();
+    const res = await fetch(`${API_BASE}/api/products/admin/all`, {
+      cache: "no-store",
+      headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+    });
     if (!res.ok) return null;
     const list = (await res.json()) as Product[];
     return list.find((p) => p.id === id) ?? null;

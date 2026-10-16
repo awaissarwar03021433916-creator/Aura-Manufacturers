@@ -27,9 +27,11 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("admin/all")]
+    [Authorize(Policy = "Admin")]
     public async Task<IActionResult> ListAll() => Ok(await _products.ListAsync(publicOnly: false));
 
     [HttpPost]
+    [Authorize(Policy = "Admin")]
     public async Task<IActionResult> Create([FromBody] ProductCreateDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Name))
@@ -47,6 +49,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = "Admin")]
     public async Task<IActionResult> Update(Guid id, [FromBody] ProductUpdateDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Name))
@@ -64,10 +67,12 @@ public class ProductsController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = "Admin")]
     public async Task<IActionResult> Delete(Guid id) =>
         await _products.DeleteAsync(id) ? NoContent() : NotFound();
 
     [HttpPost("upload-image")]
+    [Authorize(Policy = "Admin")]
     public async Task<IActionResult> UploadImage([FromForm] IFormFile file)
     {
         if (file is null || file.Length == 0) return BadRequest("No file");
