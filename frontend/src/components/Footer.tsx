@@ -118,7 +118,7 @@ export default function Footer() {
             <span className="text-[#FAF7F2]/40">Contact · </span>
             <a
               href="mailto:hello@zyverralabs.com"
-              className="transition-colors duration-400 hover:text-[#C9A961]"
+              className="text-[#C9A961]"
             >
               hello@zyverralabs.com
             </a>
