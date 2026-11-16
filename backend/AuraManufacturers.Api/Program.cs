@@ -139,6 +139,8 @@ builder.Services.AddScoped<ProductService>();
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "https://aura-manufacturers.vercel.app",
+        "https://www.auramanufacturers.com",
+        "https://auramanufacturers.com",
     };
 
     // Optional comma-separated extra origins from env (e.g. custom production domain)
